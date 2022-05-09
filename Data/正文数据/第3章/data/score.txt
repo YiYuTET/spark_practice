@@ -1,0 +1,15 @@
+math John 90
+math Betty 88
+math Mike 95
+math Lily 92
+chinese John 78
+chinese Betty 80
+chinese Mike 88
+chinese Lily 85
+english John 92
+english Betty 84
+english Mike 90
+english Lily 85
+
+
+

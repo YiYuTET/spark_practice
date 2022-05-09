@@ -1,0 +1,310 @@
+﻿3.1.1节
+
+图3-2
+val seq =Seq((1, Seq("iteblog.com","sparkhost1.com")),(3, Seq("iteblog.com","sparkhost2.com")),(2, Seq("iteblog.com","sparkhost3.com"))) 
+val iteblog= sc.makeRDD(seq)
+iteblog.collect
+iteblog.partitions.size
+iteblog.preferredLocations(iteblog.partitions(0))
+iteblog.preferredLocations(iteblog.partitions(1))
+iteblog.preferredLocations(iteblog.partitions(2))
+
+
+
+3.1.2节
+
+图3-3
+val test = sc.textFile("/user/root/test.txt")
+
+图3-4
+val test = sc.textFile("file:///etc/hadoop/conf/core-site.xml")
+
+
+
+3.1.3节
+
+图3-5
+hdfs dfs -put student.txt /user/root/
+hdfs dfs -put result_bigdata.txt /user/root/
+hdfs dfs -put result_math.txt /user/root/
+
+图3-6
+val bigdata = sc.textFile("result_bigdata.txt")
+val math = sc.textFile("result_math.txt")
+
+
+
+3.2.3节
+
+图3-10
+val one:PartialFunction[Int,String] = {case 1 =>"one";case _ =>"other"}
+val data = sc.parallelize(List(2,3,1))
+data.collect(one).collect
+
+图3-11
+val test = sc.parallelize(List("How are you","I am fine","What about you"))
+test.collect
+test.map(x=>x.split(" ")).collect
+test.flatMap(x=>x.split(" ")).collect
+
+图3-13
+val bigdata = sc.textFile("/user/root/result_bigdata.txt")
+val math = sc.textFile("/user/root/result_math.txt")
+val m_bigdata = bigdata.map{x=>val line=x.split("\t");(line(0),line(1),line(2).toInt)}
+val m_math = math.map{x=>val line=x.split("\t");(line(0),line(1),line(2).toInt)}
+
+图3-14
+val sort_bigdata = m_bigdata.sortBy(x=>x._3,false)
+val sort_math = m_math.sortBy(x=>x._3,false)
+
+图3-15
+sort_bigdata.take(5)
+sort_math.take(5)
+
+
+
+图3.3.1节
+
+图3-16
+val rdd1 = sc.parallelize(List(('a',1),('b',2),('c',3)))
+val rdd2 = sc.parallelize(List(('a',1),('d',4),('e',5)))
+rdd1.union(rdd2).collect
+
+
+
+3.3.2节
+
+图3-17
+val rdd1=sc.parallelize(List(('a',1),('b',2),('c',3)))
+rdd1.filter(_._2>1).collect
+rdd1.filter(x=>x._2>1).collect
+
+
+
+3.3.3节
+
+图3-18
+val rdd=sc.makeRDD(List(('a',1),('b',1),('a',1),('c',1)))
+rdd.distinct().collect
+
+
+
+3.3.4节
+
+图3-19
+val c_rdd1=sc.parallelize(List(('a',1),('b',1),('a',1),('c',1)))
+val c_rdd2=sc.parallelize(List(('a',1),('b',1),('d',1)))
+c_rdd1.intersection(c_rdd2).collect
+
+图3-20
+val rdd1 = sc.parallelize(List(('a',1),('b',1),('c',1)))
+val rdd2 = sc.parallelize(List(('d',1),('e',1),('c',1)))
+rdd1.subtract(rdd2).collect
+rdd2.subtract(rdd1).collect
+
+图3-21
+val rdd01 = sc.parallelize(List(1,3,5,3))
+val rdd02 = sc.parallelize(List(2,4,5,1))
+rdd01.cartesian(rdd02)
+
+
+
+3.3.5节
+
+图3-22
+val bigdata = sc.textFile("result_bigdata.txt").map{x=>val line=x.split("\t");(line(0),line(1),line(2).toInt)}
+val math = sc.textFile("result_math.txt").map{x=>val line=x.split("\t");(line(0),line(1),line(2).toInt)}
+
+图3-23
+val bigdata_Id=bigdata.filter(x=>x._3==100).map(x=>x._1)
+val math_Id=math.filter(x=>x._3==100).map(x=>x._1)
+
+图3-24
+val id=bigdata_Id.union(math_Id).distinct()
+id.collect
+
+
+
+3.4.2节
+
+图3-25
+val rdd = sc.parallelize(List("this is a test","How are you","I am fine","Can you tell me"));
+val words=rdd.map(x=>(x.split(" ")(0),x));
+words.collect
+
+
+
+3.4.4节
+
+图3-27
+val r_rdd=sc.parallelize(List(('a',1),('a',2),('b',1),('c',1),('c',1))).map(x=>(x._1,x._2))
+val re_rdd=r_rdd.reduceByKey((a,b)=>a+b)
+
+
+
+3.4.5节
+
+图3-28
+val g_rdd=r_rdd.groupByKey()
+g_rdd.collect
+g_rdd.map(x=>(x._1,x._2.size)).collect
+
+
+
+3.4.5节
+
+图3-29
+val bigdata = sc.textFile("result_bigdata.txt").map{x=>val line=x.split("\t");(line(0),line(1),line(2).toInt)}
+val math = sc.textFile("result_math.txt").map{x=>val line=x.split("\t");(line(0),line(1),line(2).toInt)}
+val all_score = bigdata union math
+
+图3-30
+val score = all_score.map(x=>(x._1,x._3)).reduceByKey((a,b)=>a+b)
+score.collect
+
+
+
+3.5.1节
+
+图3-31
+val rdd1=sc.parallelize(List(('a',1),('b',2),('c',3)))
+val rdd2=sc.parallelize(List(('a',1),('d',4),('e',5)))
+val j_rdd=rdd1.join(rdd2)
+j_rdd.collect
+
+图3-32
+val right_join=rdd1 rightOuterJoin rdd2
+right_join.collect
+图3-33
+val left_join=rdd1 leftOuterJoin rdd2
+left_join.collect
+图3-34
+val full_join=rdd1 fullOuterJoin rdd2
+full_join.collect
+
+
+
+3.5.3节
+
+图3-36
+val test = sc.parallelize(List(("panda",1),("panda",8),("pink",4),("pink",8),("pirate",5)))
+val cb_test = test.combineByKey(
+count => (count,1),
+(acc:(Int,Int),count) => (acc._1+count,acc._2+1),
+(acc1:(Int,Int),acc2:(Int,Int)) => (acc1._1+acc2._1,acc1._2+acc2._2))
+cb_test.map(x=>(x._1,x._2._1.toDouble/x._2._2)).collect
+
+
+
+3.5.5节
+
+图3-38
+val bigdata = sc.textFile("result_bigdata.txt").map{x=>val line=x.split("\t");(line(0),line(2).toInt)}
+val math = sc.textFile("result_math.txt").map{x=>val line=x.split("\t");(line(0),line(2).toInt)}
+val scores = bigdata.union(math).map(x=>(x._1,x._2))
+图3-39
+val cb_score = scores.combineByKey(
+count => (count,1),
+(acc:(Int,Int),count) => (acc._1+count,acc._2+1),
+(acc1:(Int,Int),acc2:(Int,Int)) => (acc1._1+acc2._1,acc1._2+acc2._2))
+val avg_score = cb_score.map(x=>(x._1,x._2._1.toDouble/x._2._2))
+avg_score.collect
+
+
+
+3.6.1节
+
+图3-42
+import org.json4s._
+import org.json4s.jackson.JsonMethods._
+val input = sc.textFile("testjson.json")
+case class Person(name:String,age:Int)
+implicit val formats = DefaultFormats
+val in_json = input.collect.map{x => parse(x).extract[Person]}
+
+
+图3-43
+import org.json4s.JsonDSL._
+val json = in_json.map{x=>("name" -> x.name) ~ ("age" -> x.age)}
+val jsons = json.map{x=>compact(render(x))}
+sc.parallelize(jsons).repartition(1).saveAsTextFile("json_out")
+
+
+
+3.6.2节
+
+图3-46
+import java.io.StringReader
+import au.com.bytecode.opencsv.CSVReader
+val input = sc.textFile("/tipdm/testcsv.csv")
+val result = input.map{line=>val reader = new CSVReader(new StringReader(line));reader.readNext();}
+result.collect
+
+图3-47
+import java.io.StringReader
+import scala.collection.JavaConversions._
+import au.com.bytecode.opencsv.CSVReader
+case class Data(index:String,title:String,content:String)
+val input = sc.wholeTextFiles("/tipdm/testcsv.csv")
+val result = input.flatMap{case(_,txt)=>val reader = new CSVReader(new StringReader(txt));reader.readAll().map(x=>Data(x(0),x(1),x(2)))}
+result.collect
+
+图3-48
+import java.io.{StringReader,StringWriter}
+import au.com.bytecode.opencsv.{CSVReader,CSVWriter}
+result.map(data => List(data.index,data.title,data.content).toArray).mapPartitions{data=>
+	val stringWriter = new StringWriter();
+	val csvWriter = new CSVWriter(stringWriter);
+	csvWriter.writeAll(data.toList)
+	Iterator(stringWriter.toString)}.saveAsTextFile("/tipdm/csv_out")
+	
+图3-56
+val bigdata = sc.textFile("result_bigdata.txt").map{x=>val line=x.split("\t");(line(0),line(2).toInt)}
+val math = sc.textFile("result_math.txt").map{x=>val line=x.split("\t");(line(0),line(2).toInt)}
+val student = sc.textFile("student.txt").map{x=>val line = x.split("\t");(line(0),line(1))}
+val user1 = student.join(bigdata).join(math)
+
+
+
+3.6.3节
+
+图3-50
+import org.apache.hadoop.io.{IntWritable,Text}
+val rdd = sc.parallelize(List(("Panda",3),("Kay",6),("Snall",2)))
+rdd.saveAsSequenceFile("/tipdm/outse")
+
+图3-52
+val output = sc.sequenceFile("/tipdm/outse",classOf[Text],classOf[IntWritable]).map{case (x,y) => (x.toString,y.get())}
+output.collect.foreach(println)
+
+
+
+3.6.4节
+
+图3-53
+val bigdata=sc.textFile("result_bigdata.txt")
+val math=sc.textFile("result_math.txt")
+
+图3-54
+val bigdata=sc.textFile("result_bigdata.txt")
+val math=sc.textFile("result_math.txt")
+val score = bigdata.union(math)
+score.repartition(1).saveAsTextFile("/tipdm/scores")
+
+
+
+3.6.5节
+图3-56
+val bigdata = sc.textFile("result_bigdata.txt").map{x=>val line=x.split("\t");(line(0),line(1),line(2).toInt)}
+val math = sc.textFile("result_math.txt").map{x=>val line=x.split("\t");(line(0),line(1),line(2).toInt)}
+val student = sc.textFile("student.txt").map{x=>val line=x.split("\t");(line(0),line(1))}
+val user1 = student.join(bigdata).join(math)
+
+图3-57
+val user2=user1.join(score).join(avg_score).map(x=>Array(x._1,x._2._1._1._1._1,x._2._1._1._1._2,x._2._1._1._2,x._2._1._2,x._2._2).mkString(","))
+user2.repartition(1).saveAsTextFile("collectAll")
+
+
+
+
+
